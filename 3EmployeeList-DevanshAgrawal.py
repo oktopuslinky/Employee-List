@@ -55,7 +55,7 @@ class EmployeeList:
                     self.user_input = int(input('Insert choice: '))
                     break
                 except:
-                    print("try again")
+                    print("Try again")
         
         elif data_type == "string":
             while True:
@@ -63,7 +63,7 @@ class EmployeeList:
                     self.user_input = str(input("Insert choice: "))
                     break
                 except:
-                    print("try again")
+                    print("Try again")
 
     def redirect_user_sort(self):
         if type(self.user_input) == int:
@@ -140,6 +140,7 @@ class EmployeeList:
                 writer.writerow(row)
         csvfile.close()
         print("The file has been saved.")
+        input("Press ENTER")
         self.display_main_menu()
 
     def display_emp(self):
