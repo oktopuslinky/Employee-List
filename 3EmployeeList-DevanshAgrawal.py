@@ -1,4 +1,4 @@
-import csv, tkinter, shutil
+import csv, tkinter
 from operator import itemgetter
 
 class EmployeeList:
@@ -45,11 +45,10 @@ class EmployeeList:
                 3) By job position
                 4) Chronologically by date hired
                 5) Ascending by pay
-                6) Cancel sort
+                6) Chronologically by date departed
+                7} Cancel sort
             """
         )
-        self.take_input("int", "Insert choice")
-        self.redirect_user_sort()
 
     def file_to_list(self):
         with open("employees.csv") as csvfile:
@@ -83,13 +82,13 @@ class EmployeeList:
                     self.sort_emp("Level")
                     
                 elif self.user_input == 3:
-                    self.sort_emp("Date Hired")
+                    self.sort_emp("Job Position")
                     
                 elif self.user_input == 4:
-                    self.sort_emp("Pay")
+                    self.sort_emp("Date Hired")
                     
                 elif self.user_input == 5:
-                    self.sort_emp("Job Position")
+                    self.sort_emp("Pay")
 
                 elif self.user_input == 6:
                     self.sort_emp("Date Departed")
@@ -108,10 +107,20 @@ class EmployeeList:
 
                 elif self.user_input == 3:
                     self.display_sort_menu()
+                    self.take_input("int", "Insert choice")
+                    self.redirect_user_sort()
                     
                 elif self.user_input == 4:
-                    self.search_emp()
+                    searching_name = str(input("What is the name of the employee?"))
+                    employee_data = self.search_emp(searching_name)
+                    if employee_data is not None:
+                        print(employee_data)
+                    else:
+                        print("This employee does not exist.")
                     
+                    input("Press ENTER")
+                    self.display_main_menu()
+
                 elif self.user_input == 5:
                     self.save_file()
                     
@@ -128,12 +137,20 @@ class EmployeeList:
 
     def add_emp(self):
         print("Please input the following information about the new employee:")
+
         while True:
-            try:
-                self.new_name = str(input("Name: "))
+            while True:
+                try:
+                    self.new_name = str(input("Name: "))
+                    break
+                except:
+                    print("try again.")
+
+            emp_data = self.search_emp(self.new_name)
+            if emp_data is not None and not emp_data['Date Departed']:
+                print("This employee already exists. Please try again.")
+            else:
                 break
-            except:
-                print("Try again.")
         
         while True:
             try:
@@ -193,7 +210,29 @@ class EmployeeList:
         self.display_main_menu()
 
     def delete_emp(self):
-        pass
+        while True:
+            self.take_input("string", "What is the name of this employee")
+            emp_data = self.search_emp(self.user_input)
+            employee_index = None
+            for index in range(len(self.employee_list)):
+                #print(self.employee_list[index])
+                if self.employee_list[index] == emp_data:
+                    print("Found a Match!")
+                    employee_index = index
+
+            if employee_index:
+                break
+
+        departed_year = input("What year did the employee depart?: ")
+        departed_month = input("what month did the employee depart?:")
+        departed_day = input("what day of the month did the employee depart?")
+        final_date = str(str(departed_year)+"-"+str(departed_month)+"-"+str(departed_day))
+
+        self.employee_list[employee_index]['Date Departed'] = final_date
+
+        print("Employee ")
+        input("Press ENTER")
+        self.display_main_menu()
 
     def sort_emp(self, sort_key):
         temp_emp_list = self.employee_list
@@ -204,8 +243,10 @@ class EmployeeList:
         input("Press ENTER")
         self.display_main_menu()
 
-    def search_emp(self):
-        pass
+    def search_emp(self, search_name):
+        for emp in self.employee_list:
+            if emp['Name'] == search_name:
+                return emp
 
     def save_file(self):
         filename = "employees.csv"
