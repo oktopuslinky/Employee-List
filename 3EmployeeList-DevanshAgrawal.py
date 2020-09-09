@@ -1,4 +1,4 @@
-import csv, tkinter
+import csv
 from operator import itemgetter
 
 class EmployeeList:
@@ -8,12 +8,19 @@ class EmployeeList:
 
         self.new_name = ''
         self.new_level = ''
-        self.new_month = int()
-        self.new_day = int()
-        self.new_year = int()
+        self.new_month = 0
+        self.new_day = 0
+        self.new_year = 0
         self.new_date = ''
-        self.new_pay = int()
+        self.new_pay = 0
         self.new_position = ''
+
+        self.max_name = 0
+        self.max_level = 0
+        self.max_date = 0
+        self.max_pay = 0
+        self.max_position = 0
+        self.max_departed = 0
 
         self.file_to_list()
         self.display_main_menu()
@@ -160,25 +167,43 @@ class EmployeeList:
                 print("Try again.")
 
         while True:
-            try:
-                self.new_month = int(input("Month (MM): "))
+            while True:
+                try:
+                    self.new_month = int(input("Month (MM): "))
+                    break
+                except:
+                    print("Try again.")
+
+            if len(str(self.new_month)) == 2:
                 break
-            except:
-                print("Try again.")
+            else:
+                print("Please input two integers.")
 
         while True:
-            try:
-                self.new_day = int(input("Day (DD): "))
+            while True:
+                try:
+                    self.new_day = int(input("Day (DD): "))
+                    break
+                except:
+                    print("Try again.")
+
+            if len(str(self.new_day)) == 2:
                 break
-            except:
-                print("Try again.")
+            else:
+                print("Please input two integers.")
 
         while True:
-            try:
-                self.new_year = int(input("Year (YYYY): "))
+            while True:
+                try:
+                    self.new_year = int(input("Year (YYYY): "))
+                    break
+                except:
+                    print("Try again.")
+
+            if len(str(self.new_year)) == 4:
                 break
-            except:
-                print("Try again.")
+            else:
+                print("Please input four integers.")
         
         while True:
             try:
@@ -263,9 +288,46 @@ class EmployeeList:
         self.display_main_menu()
 
     def display_emp(self):
-        print(self.employee_list)
-
+        self.get_max_lengths()
+        print(
+            "╔" + (self.max_name * "═") +
+            "╦" + (self.max_level * "═") +
+            "╦" + (self.max_date * "═") +
+            "╦" + (self.max_pay * "═") +
+            "╦" + (self.max_position * "═") +
+            "╦" + (13 * "═") +
+            "╗"
+            )
+        print(
+            "║" + 
+            "Name" + " " * (self.max_name-4) + "║" + 
+            "Level" + " " * (self.max_level-5) + "║" + 
+            "Date Hired" + "║" + 
+            "Pay" + " " * (self.max_pay-3) + "║" + 
+            "Job position" + " " * (self.max_position-12) + "║" + 
+            "Date Departed" + "║"
+        )
         input("Press ENTER")
         self.display_main_menu()
+
+    def get_max_lengths(self):
+        for row in self.employee_list:
+            if len(row['Name']) > self.max_name:
+                self.max_name = len(row['Name'])
+            
+            if len(row['Level']) > self.max_level:
+                self.max_level = len(row['Level'])
+
+            if len(row['Date Hired']) > self.max_date:
+                self.max_date = len(row['Date Hired'])
+
+            if len(row['Pay']) > self.max_pay:
+                self.max_pay = len(row['Pay'])
+
+            if len(row['Job Position']) > self.max_position:
+                self.max_position = len(row['Job Position'])
+            
+            if len(row['Date Departed']) > self.max_departed:
+                self.max_departed = len(row['Date Departed'])
 
 the_employee_list = EmployeeList()
