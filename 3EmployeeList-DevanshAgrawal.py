@@ -1,17 +1,15 @@
 import csv
 from operator import itemgetter
 
-class EmployeeList():
-    def __init__(self):
-        self.employee_list = []
-
-        print(self.employee_list)
-        print("----")
-        if len(self.employee_list) == 0:
+class EmployeeList(object):
+    def __init__(self, employee_list=None):
+        if employee_list is None:
             print("zero")
+            self.employee_list = []
             self.file_to_list()
-
-        print(self.employee_list)
+            print(self.employee_list)
+        elif employee_list is not None:
+            self.employee_list = employee_list
 
     def file_to_list(self):
         with open("employees.csv") as csvfile:
@@ -23,7 +21,7 @@ class EmployeeList():
         temp_emp_list = self.employee_list
         if len(temp_emp_list) > 0:
             temp_emp_list.sort(key=itemgetter(sort_key))
-            print(temp_emp_list)
+            #print(temp_emp_list)
 
         input("Press ENTER")
         self.display_main_menu()
@@ -34,8 +32,9 @@ class EmployeeList():
                 return emp
 
 class Employee(EmployeeList):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, the_employee_list):
+        #super(Employee, self).__init__()
+        self.the_employee_list = the_employee_list
         self.new_name = ''
         self.new_level = ''
         self.new_month = 0
@@ -59,12 +58,13 @@ class Employee(EmployeeList):
                 except:
                     print("try again.")
 
-            emp_data = super().search_emp(self.new_name)
+            emp_data = EmployeeList(self.the_employee_list).search_emp(self.new_name)
             if emp_data is not None and not emp_data['Date Departed']:
                 print("This employee already exists. Please try again.")
             else:
                 break
-        
+        self.new_level = Menu(self.the_employee_list).take_input("str", "Level")
+
         while True:
             try:
                 self.new_level = str(input("Level: "))
@@ -129,27 +129,28 @@ class Employee(EmployeeList):
 
         self.new_date = str(str(self.new_year)+"-"+str(self.new_month)+"-"+str(self.new_day))
 
-        (self.employee_list).append({
+        (self.the_employee_list).append({
             "Name": self.new_name,
             "Level": self.new_level,
             "Date Hired": self.new_date,
             "Pay": self.new_pay,
             "Job Position": self.new_position,
-            "Date Departed": None
+            "Date Departed": ''
         })
 
+        print(self.the_employee_list)
         print("This employee has been added to the system.")
         input("Press ENTER")
-        Menu().display_main_menu()
+        Menu(self.the_employee_list).display_main_menu()
 
     def delete_emp(self):
         while True:
-            Menu.take_input("string", "What is the name of this employee")
-            emp_data = super().search_emp(self.user_input)
+            the_user_input = Menu(self.the_employee_list).take_input("string", "What is the name of this employee")
+            emp_data = EmployeeList(self.the_employee_list).search_emp(the_user_input)
             employee_index = None
-            for index in range(len(self.employee_list)):
+            for index in range(len(self.the_employee_list)):
                 #print(self.employee_list[index])
-                if self.employee_list[index] == emp_data:
+                if self.the_employee_list[index] == emp_data:
                     print("Found a Match!")
                     employee_index = index
 
@@ -161,13 +162,14 @@ class Employee(EmployeeList):
         departed_day = input("what day of the month did the employee depart?")
         final_date = str(str(departed_year)+"-"+str(departed_month)+"-"+str(departed_day))
 
-        self.employee_list[employee_index]['Date Departed'] = final_date
+        self.the_employee_list[employee_index]['Date Departed'] = final_date
 
-        print("Employee ")
+        print("Employee deleted.")
         input("Press ENTER")
-        self.display_main_menu()
+        Menu(self.the_employee_list).display_main_menu()
         
     def display_emp(self):
+        print(self.the_employee_list)
         self.get_max_lengths()
         print(
             "╔" + (self.max_lengths[0] * "═") +
@@ -187,11 +189,20 @@ class Employee(EmployeeList):
             "Job position" + " " * (self.max_lengths[4]-12) + "║" + 
             "Date Departed" + "║"
         )
+        print(
+            "╠" + (self.max_lengths[0] * "═") +
+            "╬" + (self.max_lengths[1] * "═") +
+            "╬" + (self.max_lengths[2] * "═") +
+            "╬" + (self.max_lengths[3] * "═") +
+            "╬" + (self.max_lengths[4] * "═") +
+            "╬" + (13 * "═") +
+            "╣"
+        )
         input("Press ENTER")
-        Menu().display_main_menu()
+        Menu(self.the_employee_list).display_main_menu()
 
     def get_max_lengths(self):
-        for row in self.employee_list:
+        for row in self.the_employee_list:
             if len(row['Name']) > self.max_lengths[0]:
                 self.max_lengths[0] = len(row['Name'])
             
@@ -211,28 +222,30 @@ class Employee(EmployeeList):
                 self.max_lengths[5] = len(row['Date Departed'])
 
 class File(EmployeeList):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, the_employee_list):
+        #super(File, self).__init__()
         self.file = "employees.csv"
+        self.the_employee_list = the_employee_list
 
     def save_file(self):
         with open(self.file, "w") as csvfile:
             headers = ["Name", 'Level', 'Date Hired', 'Pay', "Job Position", "Date Departed"]
             writer = csv.DictWriter(csvfile, fieldnames=headers)
             writer.writeheader()
-            for row in self.employee_list:
+            for row in self.the_employee_list:
                 writer.writerow(row)
         csvfile.close()
 
         print("The file has been saved.")
         input("Press ENTER")
-        Menu().display_main_menu()
+        Menu(self.the_employee_list).display_main_menu()
 
 class Menu(EmployeeList):
-    def __init__(self):
-        #super().__init__()
-        self.user_input = ""
-        self.display_main_menu()
+    def __init__(self, the_employee_list):
+        self.the_employee_list = the_employee_list
+        #super(Menu, self).__init__()
+        #self.user_input = ""
+        #self.display_main_menu()
 
     def display_main_menu(self):
         print(
@@ -248,8 +261,8 @@ class Menu(EmployeeList):
                 7) Quit
             """
         )
-        self.take_input("int", "Insert choice")
-        self.redirect_user_main()
+        the_user_input = self.take_input("int", "Insert choice")
+        self.redirect_user_main(the_user_input)
 
     def display_sort_menu(self):
         print(
@@ -270,60 +283,63 @@ class Menu(EmployeeList):
         if data_type == "int":
             while True:
                 try:
-                    self.user_input = int(input(input_text+": "))
+                    user_input = int(input(input_text+": "))
                     break
                 except:
                     print("Try again")
+            return user_input
         
         elif data_type == "string":
             while True:
                 try:
-                    self.user_input = str(input(input_text+": "))
+                    user_input = str(input(input_text+": "))
                     break
                 except:
                     print("Try again")
+            return user_input
 
-    def redirect_user_sort(self):
-        if type(self.user_input) == int:
-            if self.user_input != 7:
-                if self.user_input == 1:
+    def redirect_user_sort(self, user_input):
+        if type(user_input) == int:
+            if user_input != 7:
+                if user_input == 1:
                     self.sort_emp("Name")
 
-                elif self.user_input == 2:
+                elif user_input == 2:
                     self.sort_emp("Level")
                     
-                elif self.user_input == 3:
+                elif user_input == 3:
                     self.sort_emp("Job Position")
                     
-                elif self.user_input == 4:
+                elif user_input == 4:
                     self.sort_emp("Date Hired")
                     
-                elif self.user_input == 5:
+                elif user_input == 5:
                     self.sort_emp("Pay")
 
-                elif self.user_input == 6:
+                elif user_input == 6:
                     self.sort_emp("Date Departed")
             else:
-                self.display_main_menu()
+                self.display_main_menu(self.the_employee_list)
 
-    def redirect_user_main(self):
-        if type(self.user_input) == int:
-            if self.user_input != 7:
+    def redirect_user_main(self, user_input):
+        if type(user_input) == int:
+            if user_input != 7:
 
-                if self.user_input == 1:
-                    Employee().add_emp()
+                if user_input == 1:
+                    Employee(self.the_employee_list).add_emp()
 
-                elif self.user_input == 2:
-                    Employee().delete_emp()
+                elif user_input == 2:
+                    Employee(self.the_employee_list).delete_emp()
 
-                elif self.user_input == 3:
+                elif user_input == 3:
                     self.display_sort_menu()
-                    self.take_input("int", "Insert choice")
-                    self.redirect_user_sort()
+                    the_user_input = self.take_input("int", "Insert choice")
+                    print(the_user_input)
+                    self.redirect_user_sort(the_user_input)
                     
-                elif self.user_input == 4:
+                elif user_input == 4:
                     searching_name = str(input("What is the name of this employee?: "))
-                    employee_data = super().search_emp(searching_name)
+                    employee_data = EmployeeList(self.the_employee_list).search_emp(searching_name)
                     if employee_data is not None:
                         print(employee_data)
                     else:
@@ -332,18 +348,20 @@ class Menu(EmployeeList):
                     input("Press ENTER")
                     self.display_main_menu()
 
-                elif self.user_input == 5:
-                    File().save_file()
+                elif user_input == 5:
+                    File(self.the_employee_list).save_file()
                     
-                elif self.user_input == 6:
-                    Employee().display_emp()
+                elif user_input == 6:
+                    Employee(self.the_employee_list).display_emp()
                     
             else:
                 print("Have a nice day.")
                 return
         else:
             print("Please enter a number from 1-7.")
-            self.display_main_menu()
+            self.display_main_menu(self.the_employee_list)
 
-the_employee_list = EmployeeList()
-the_menu = Menu()
+#the_employee_list = EmployeeList()
+the_employees = EmployeeList()
+the_menu = Menu(the_employees.employee_list)
+the_menu.display_main_menu()
