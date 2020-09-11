@@ -1,13 +1,11 @@
-import csv
+import csv, sys
 from operator import itemgetter
 
 class EmployeeList(object):
     def __init__(self, employee_list=None):
         if employee_list is None:
-            print("zero")
             self.employee_list = []
             self.file_to_list()
-            print(self.employee_list)
         elif employee_list is not None:
             self.employee_list = employee_list
 
@@ -17,11 +15,10 @@ class EmployeeList(object):
             for row in reader:
                 self.employee_list.append(row)
 
-    def sort_emp(self, sort_key):
-        temp_emp_list = self.employee_list
+    def sort_emp(self, sort_key, the_employee_list):
+        temp_emp_list = EmployeeList(the_employee_list).employee_list
         if len(temp_emp_list) > 0:
             temp_emp_list.sort(key=itemgetter(sort_key))
-            #print(temp_emp_list)
 
         input("Press ENTER")
         self.display_main_menu()
@@ -49,83 +46,40 @@ class Employee(EmployeeList):
         
     def add_emp(self):
         print("Please input the following information about the new employee:")
-
+        
         while True:
-            while True:
-                try:
-                    self.new_name = str(input("Name: "))
-                    break
-                except:
-                    print("try again.")
+            self.new_name = Menu(self.the_employee_list).take_input("string", "Name")
 
             emp_data = EmployeeList(self.the_employee_list).search_emp(self.new_name)
             if emp_data is not None and not emp_data['Date Departed']:
                 print("This employee already exists. Please try again.")
             else:
                 break
-        self.new_level = Menu(self.the_employee_list).take_input("str", "Level")
 
         while True:
-            try:
-                self.new_level = str(input("Level: "))
-                break
-            except:
-                print("Try again.")
+            self.new_level = Menu(self.the_employee_list).take_input("string", "Level")
 
         while True:
-            while True:
-                try:
-                    self.new_month = int(input("Month (MM): "))
-                    break
-                except:
-                    print("Try again.")
-
-            if len(str(self.new_month)) == 2:
-                break
-            else:
-                print("Please input two integers.")
+            self.new_month = Menu(self.the_employee_list).take_input("string", "Month (MM)")
+            self.new_month = f'{self.new_month:02}'
 
         while True:
-            while True:
-                try:
-                    self.new_day = int(input("Day (DD): "))
-                    break
-                except:
-                    print("Try again.")
-
-            if len(str(self.new_day)) == 2:
-                break
-            else:
-                print("Please input two integers.")
+            self.new_day = Menu(self.the_employee_list).take_input("string", "Day (DD)")
+            self.new_day = f'{self.new_day:02}'
 
         while True:
-            while True:
-                try:
-                    self.new_year = int(input("Year (YYYY): "))
-                    break
-                except:
-                    print("Try again.")
-
+            self.new_year = Menu(self.the_employee_list).take_input("string", "Year (YYYY)")
             if len(str(self.new_year)) == 4:
                 break
             else:
                 print("Please input four integers.")
         
         while True:
-            try:
-                self.new_pay = int(input("Pay: $"))
-                break
-            except:
-                print("Try again.")
-            
-        self.new_pay = str(self.new_pay)
+            self.new_pay = Menu(self.the_employee_list).take_input("money", "Pay")
+            self.new_pay = str(self.new_pay)
 
         while True:
-            try:
-                self.new_position = str(input("Position: "))
-                break
-            except:
-                print("Try again.")
+            self.new_position = Menu(self.the_employee_list).take_input("string", "Position")
 
         self.new_date = str(str(self.new_year)+"-"+str(self.new_month)+"-"+str(self.new_day))
 
@@ -138,7 +92,6 @@ class Employee(EmployeeList):
             "Date Departed": ''
         })
 
-        print(self.the_employee_list)
         print("This employee has been added to the system.")
         input("Press ENTER")
         Menu(self.the_employee_list).display_main_menu()
@@ -168,9 +121,8 @@ class Employee(EmployeeList):
         input("Press ENTER")
         Menu(self.the_employee_list).display_main_menu()
         
-    def display_emp(self):
-        print(self.the_employee_list)
-        self.get_max_lengths()
+    def display_emp(self, the_employee_list):
+        self.get_max_lengths(the_employee_list)
         print(
             "╔" + (self.max_lengths[0] * "═") +
             "╦" + (self.max_lengths[1] * "═") +
@@ -179,14 +131,14 @@ class Employee(EmployeeList):
             "╦" + (self.max_lengths[4] * "═") +
             "╦" + (13 * "═") +
             "╗"
-            )
+        )
         print(
             "║" + 
             "Name" + " " * (self.max_lengths[0]-4) + "║" + 
             "Level" + " " * (self.max_lengths[1]-5) + "║" + 
             "Date Hired" + "║" + 
             "Pay" + " " * (self.max_lengths[3]-3) + "║" + 
-            "Job position" + " " * (self.max_lengths[4]-12) + "║" + 
+            "Job Position" + " " * (self.max_lengths[4]-12) + "║" + 
             "Date Departed" + "║"
         )
         print(
@@ -198,11 +150,31 @@ class Employee(EmployeeList):
             "╬" + (13 * "═") +
             "╣"
         )
+        for emp in the_employee_list:
+            print(
+                "║" + emp['Name'] + ' ' * (self.max_lengths[0] - len(emp['Name'])) +
+                "║" + emp["Level"] + ' ' * (self.max_lengths[1] - len(emp['Level'])) +
+                "║" + emp['Date Hired'] + ' ' * (self.max_lengths[2] - len(emp['Date Hired'])) +
+                "║" + emp['Pay'] + ' ' * (self.max_lengths[3] - len(emp['Pay'])) +
+                "║" + emp['Job Position'] + ' ' * (self.max_lengths[4] - len(emp['Job Position'])) +
+                "║" + emp['Date Departed'] + ' ' * (13 - len(emp['Date Departed'])) +
+                "║"
+            )
+        print(
+            "╚" + (self.max_lengths[0] * "═") +
+            "╩" + (self.max_lengths[1] * "═") +
+            "╩" + (self.max_lengths[2] * "═") +
+            "╩" + (self.max_lengths[3] * "═") +
+            "╩" + (self.max_lengths[4] * "═") +
+            "╩" + (13 * "═") +
+            "╝"
+        )
+        print(" ")
         input("Press ENTER")
         Menu(self.the_employee_list).display_main_menu()
 
-    def get_max_lengths(self):
-        for row in self.the_employee_list:
+    def get_max_lengths(self, the_employee_list):
+        for row in the_employee_list:
             if len(row['Name']) > self.max_lengths[0]:
                 self.max_lengths[0] = len(row['Name'])
             
@@ -223,7 +195,6 @@ class Employee(EmployeeList):
 
 class File(EmployeeList):
     def __init__(self, the_employee_list):
-        #super(File, self).__init__()
         self.file = "employees.csv"
         self.the_employee_list = the_employee_list
 
@@ -243,9 +214,6 @@ class File(EmployeeList):
 class Menu(EmployeeList):
     def __init__(self, the_employee_list):
         self.the_employee_list = the_employee_list
-        #super(Menu, self).__init__()
-        #self.user_input = ""
-        #self.display_main_menu()
 
     def display_main_menu(self):
         print(
@@ -278,88 +246,104 @@ class Menu(EmployeeList):
                 7} Cancel sort
             """
         )
+        the_user_input = self.take_input("int", "Insert choice")
+        self.redirect_user_sort(the_user_input)
 
     def take_input(self, data_type, input_text):
         if data_type == "int":
             while True:
                 try:
-                    user_input = int(input(input_text+": "))
+                    user_input = int(input(input_text + ": "))
                     break
                 except:
-                    print("Try again")
+                    print("Please try again")
             return user_input
         
         elif data_type == "string":
             while True:
                 try:
-                    user_input = str(input(input_text+": "))
+                    user_input = str(input(input_text + ": "))
                     break
                 except:
-                    print("Try again")
+                    print("Please try again")
+            return user_input
+
+        elif data_type == "money":
+            while True:
+                try:
+                    user_input = int(input(input_text + ": $"))
+                    break
+                except:
+                    print("Please try again.")
+            user_input = str(user_input)
             return user_input
 
     def redirect_user_sort(self, user_input):
-        if type(user_input) == int:
-            if user_input != 7:
-                if user_input == 1:
-                    self.sort_emp("Name")
+        possible_choices = [1, 2, 3, 4, 5, 6, 7]
+        if type(user_input) == int and user_input in possible_choices:
+            if user_input == 1:
+                self.sort_emp("Name", self.the_employee_list)
 
-                elif user_input == 2:
-                    self.sort_emp("Level")
-                    
-                elif user_input == 3:
-                    self.sort_emp("Job Position")
-                    
-                elif user_input == 4:
-                    self.sort_emp("Date Hired")
-                    
-                elif user_input == 5:
-                    self.sort_emp("Pay")
+            elif user_input == 2:
+                self.sort_emp("Level", self.the_employee_list)
+                
+            elif user_input == 3:
+                self.sort_emp("Job Position", self.the_employee_list)
+                
+            elif user_input == 4:
+                self.sort_emp("Date Hired", self.the_employee_list)
+                
+            elif user_input == 5:
+                self.sort_emp("Pay", self.the_employee_list)
 
-                elif user_input == 6:
-                    self.sort_emp("Date Departed")
-            else:
-                self.display_main_menu(self.the_employee_list)
+            elif user_input == 6:
+                self.sort_emp("Date Departed", self.the_employee_list)
+
+            elif user_input == 7:
+                self.display_main_menu()
+        else:
+            print("Please input an integer from 1-7.")
+            self.display_sort_menu()
 
     def redirect_user_main(self, user_input):
-        if type(user_input) == int:
-            if user_input != 7:
+        possible_choices = [1, 2, 3, 4, 5, 6, 7]
+        if type(user_input) == int and user_input in possible_choices:
+            if user_input == 1:
+                Employee(self.the_employee_list).add_emp()
 
-                if user_input == 1:
-                    Employee(self.the_employee_list).add_emp()
+            elif user_input == 2:
+                Employee(self.the_employee_list).delete_emp()
 
-                elif user_input == 2:
-                    Employee(self.the_employee_list).delete_emp()
+            elif user_input == 3:
+                self.display_sort_menu()
+                the_user_input = self.take_input("int", "Insert choice")
+                self.redirect_user_sort(the_user_input)
+                
+            elif user_input == 4:
+                searching_name = str(input("What is the name of this employee?: "))
+                employee_data = EmployeeList(self.the_employee_list).search_emp(searching_name)
+                if employee_data is not None:
+                    the_employee_data = [employee_data]
+                    Employee(self.the_employee_list).display_emp(the_employee_data)
+                else:
+                    print("This employee does not exist.")
+                
+                input("Press ENTER")
+                self.display_main_menu()
 
-                elif user_input == 3:
-                    self.display_sort_menu()
-                    the_user_input = self.take_input("int", "Insert choice")
-                    print(the_user_input)
-                    self.redirect_user_sort(the_user_input)
-                    
-                elif user_input == 4:
-                    searching_name = str(input("What is the name of this employee?: "))
-                    employee_data = EmployeeList(self.the_employee_list).search_emp(searching_name)
-                    if employee_data is not None:
-                        print(employee_data)
-                    else:
-                        print("This employee does not exist.")
-                    
-                    input("Press ENTER")
-                    self.display_main_menu()
-
-                elif user_input == 5:
-                    File(self.the_employee_list).save_file()
-                    
-                elif user_input == 6:
-                    Employee(self.the_employee_list).display_emp()
-                    
-            else:
-                print("Have a nice day.")
-                return
+            elif user_input == 5:
+                File(self.the_employee_list).save_file()
+                
+            elif user_input == 6:
+                Employee(self.the_employee_list).display_emp(self.the_employee_list)
+            
+            elif user_input == 7:
+                print("Have a nice day")
+                sys.exit()
+                
         else:
-            print("Please enter a number from 1-7.")
-            self.display_main_menu(self.the_employee_list)
+            print("Please enter an integer from 1-7.")
+            self.display_main_menu()
 
 #the_employee_list = EmployeeList()
 the_employees = EmployeeList()
