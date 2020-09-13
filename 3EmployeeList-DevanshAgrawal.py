@@ -32,6 +32,7 @@ class EmployeeList(object):
 class Employee(EmployeeList):
     def __init__(self, the_employee_list):
         self.the_employee_list = the_employee_list
+
         self.new_name = ''
         self.new_level = ''
         self.new_month = 0
@@ -78,17 +79,22 @@ class Employee(EmployeeList):
 
         self.new_date = str(str(self.new_year)+"-"+str(self.new_month)+"-"+str(self.new_day))
 
-        (self.the_employee_list).append({
-            "Name": self.new_name,
-            "Level": self.new_level,
-            "Date Hired": self.new_date,
-            "Pay": self.new_pay,
-            "Job Position": self.new_position,
-            "Date Departed": ''
-        })
+        final_input = Menu(self.the_employee_list).take_input("polar", "Are you sure you want to add this new employee?")
 
-        print("This employee has been added to the system.")
-        input("Press ENTER")
+        if final_input == "y" or final_input == "Y":
+            (self.the_employee_list).append({
+                "Name": self.new_name,
+                "Level": self.new_level,
+                "Date Hired": self.new_date,
+                "Pay": self.new_pay,
+                "Job Position": self.new_position,
+                "Date Departed": ''
+            })
+            print("This employee has been added to the system.")
+            input("Press ENTER")
+        else:
+            print("You will now be redirected to the main menu.")
+
         Menu(self.the_employee_list).display_main_menu()
 
     def delete_emp(self):
@@ -105,13 +111,13 @@ class Employee(EmployeeList):
                 break
 
         while True:
-            departed_year = Menu(self.the_employee_list).take_input("int", "What year did the employee depart? (YYYY): ")
+            departed_year = Menu(self.the_employee_list).take_input("int", "What year did the employee depart? (YYYY)")
             if len(str(departed_year)) == 4:
                 break
             else:
                 print("Please input four integers.")
 
-        departed_month = Menu(self.the_employee_list).take_input("int", "what month did the employee depart?:")
+        departed_month = Menu(self.the_employee_list).take_input("int", "what month did the employee depart?")
         departed_month = f'{departed_month:02}'
 
         departed_day = Menu(self.the_employee_list).take_input("int", "what day of the month did the employee depart?")
@@ -119,10 +125,15 @@ class Employee(EmployeeList):
 
         final_date = str(str(departed_year)+"-"+str(departed_month)+"-"+str(departed_day))
 
-        self.the_employee_list[employee_index]['Date Departed'] = final_date
+        final_choice = Menu(self.the_employee_list).take_input("polar", "Are you sure you want to delete this employee?")
 
-        print("Employee deleted.")
-        input("Press ENTER")
+        if final_choice == "Y" or final_choice == "y":
+            self.the_employee_list[employee_index]['Date Departed'] = final_date
+            print("Employee deleted.")
+            input("Press ENTER")
+        else:
+            print("You will now be redirected to the main menu.")
+
         Menu(self.the_employee_list).display_main_menu()
         
     def display_emp(self, the_employee_list):
@@ -196,6 +207,19 @@ class Employee(EmployeeList):
             
             if len(row['Date Departed']) > self.max_lengths[5]:
                 self.max_lengths[5] = len(row['Date Departed'])
+        
+        #self.max_lengths 2 and 5 are irrelevant since they aren't affected by small values.
+        if self.max_lengths[0] < 4:
+            self.max_lengths[0] = 4
+
+        if self.max_lengths[1] < 5:
+            self.max_lengths[1] = 5
+        
+        if self.max_lengths[3] < 3:
+            self.max_lengths[3] = 3
+        
+        if self.max_lengths[4] < 12:
+            self.max_lengths[4] = 12
 
 class File(EmployeeList):
     def __init__(self, the_employee_list):
@@ -203,16 +227,21 @@ class File(EmployeeList):
         self.the_employee_list = the_employee_list
 
     def save_file(self):
-        with open(self.file, "w") as csvfile:
-            headers = ["Name", 'Level', 'Date Hired', 'Pay', "Job Position", "Date Departed"]
-            writer = csv.DictWriter(csvfile, fieldnames=headers)
-            writer.writeheader()
-            for row in self.the_employee_list:
-                writer.writerow(row)
-        csvfile.close()
+        final_input = Menu(self.the_employee_list).take_input("polar", "Are you sure you want to save the file?")
+        if final_input == "Y" or final_input == "y":
+            with open(self.file, "w") as csvfile:
+                headers = ["Name", 'Level', 'Date Hired', 'Pay', "Job Position", "Date Departed"]
+                writer = csv.DictWriter(csvfile, fieldnames=headers)
+                writer.writeheader()
+                for row in self.the_employee_list:
+                    writer.writerow(row)
+            csvfile.close()
 
-        print("The file has been saved.")
-        input("Press ENTER")
+            print("The file has been saved.")
+            input("Press ENTER")
+        else:
+            print("You will now be redirected to the main menu.")
+
         Menu(self.the_employee_list).display_main_menu()
 
 class Menu(EmployeeList):
@@ -258,10 +287,10 @@ class Menu(EmployeeList):
             while True:
                 try:
                     user_input = int(input(input_text + ": "))
-                    if user_input != None:
+                    if user_input is not None:
                         break
                 except:
-                    print("Please try again")
+                    print("Please try again.")
             return user_input
         
         elif data_type == "string":
@@ -271,7 +300,7 @@ class Menu(EmployeeList):
                     if user_input is not None:
                         break
                 except:
-                    print("Please try again")
+                    print("Please try again.")
             return user_input
 
         elif data_type == "money":
@@ -282,8 +311,20 @@ class Menu(EmployeeList):
                         break
                 except:
                     print("Please try again.")
+
             user_input = f'{user_input:,}'
             user_input = "$" + str(user_input)
+            return user_input
+
+        elif data_type == "polar":
+            possible_values = ["Y", "N", "y", "n"]
+            while True:
+                try:
+                    user_input = str(input(input_text + " (Y/N): "))
+                    if user_input is not None and user_input in possible_values:
+                        break
+                except:
+                    print("Please try again.")
             return user_input
 
     def redirect_user_sort(self, user_input):
