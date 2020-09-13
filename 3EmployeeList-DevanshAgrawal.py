@@ -79,7 +79,7 @@ class Employee(EmployeeList):
 
         self.new_date = str(str(self.new_year)+"-"+str(self.new_month)+"-"+str(self.new_day))
 
-        final_input = Menu(self.the_employee_list).take_input("polar", "Are you sure you want to add this new employee?")
+        final_input = Menu(self.the_employee_list).take_input("verify", "Are you sure you want to add this new employee?")
 
         if final_input == "y" or final_input == "Y":
             (self.the_employee_list).append({
@@ -125,7 +125,7 @@ class Employee(EmployeeList):
 
         final_date = str(str(departed_year)+"-"+str(departed_month)+"-"+str(departed_day))
 
-        final_choice = Menu(self.the_employee_list).take_input("polar", "Are you sure you want to delete this employee?")
+        final_choice = Menu(self.the_employee_list).take_input("verify", "Are you sure you want to delete this employee?")
 
         if final_choice == "Y" or final_choice == "y":
             self.the_employee_list[employee_index]['Date Departed'] = final_date
@@ -227,7 +227,7 @@ class File(EmployeeList):
         self.the_employee_list = the_employee_list
 
     def save_file(self):
-        final_input = Menu(self.the_employee_list).take_input("polar", "Are you sure you want to save the file?")
+        final_input = Menu(self.the_employee_list).take_input("verify", "Are you sure you want to save the file?")
         if final_input == "Y" or final_input == "y":
             with open(self.file, "w") as csvfile:
                 headers = ["Name", 'Level', 'Date Hired', 'Pay', "Job Position", "Date Departed"]
@@ -263,7 +263,11 @@ class Menu(EmployeeList):
             """
         )
         the_user_input = self.take_input("int", "Insert choice")
-        self.redirect_user_main(the_user_input)
+        final_user_input = self.take_input("verify", "Are you sure about this choice?")
+        if final_user_input == "Y" or final_user_input == "y":
+            self.redirect_user_main(the_user_input)
+        else:
+            self.display_main_menu()
 
     def display_sort_menu(self):
         print(
@@ -280,7 +284,11 @@ class Menu(EmployeeList):
             """
         )
         the_user_input = self.take_input("int", "Insert choice")
-        self.redirect_user_sort(the_user_input)
+        final_user_input = self.take_input("verify", "Are you sure about this choice?")
+        if final_user_input == "Y" or final_user_input == "y":
+            self.redirect_user_sort(the_user_input)
+        else:
+            self.display_sort_menu()
 
     def take_input(self, data_type, input_text):
         if data_type == "int":
@@ -316,7 +324,7 @@ class Menu(EmployeeList):
             user_input = "$" + str(user_input)
             return user_input
 
-        elif data_type == "polar":
+        elif data_type == "verify":
             possible_values = ["Y", "N", "y", "n"]
             while True:
                 try:
