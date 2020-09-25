@@ -1,8 +1,9 @@
 import csv, sys
 from operator import itemgetter
 
-class EmployeeList(object):
+class EmployeeList():
     def __init__(self):
+        self.employee_list = []
         self.employee_list_cur = []
         self.employee_list_dep = []
 
@@ -33,19 +34,10 @@ class EmployeeList(object):
             if emp['Name'] == search_name:
                 return emp
 
-class Employee(EmployeeList):
+class Employee():
     def __init__(self, the_employee_list):
         self.the_employee_list = the_employee_list
-
-        self.new_name = ''
-        self.new_level = ''
-        self.new_month = 0
-        self.new_day = 0
-        self.new_year = 0
-        self.new_date = ''
-        self.new_pay = 0
-        self.new_position = ''
-        
+        print(self.the_employee_list)
         #Name, Level, Date, Pay, Position, Departed
         self.max_lengths = [0, 0, 0, 0, 0, 0]
         
@@ -53,45 +45,47 @@ class Employee(EmployeeList):
         print("Please input the following information about the new employee:")
         
         while True:
-            self.new_name = Menu(self.the_employee_list).take_input("string", "Name")
+            new_name = Take_input("string", "Name").the_user_input
 
-            emp_data = EmployeeList(self.the_employee_list).search_emp(self.new_name)
+            emp_data = EmployeeList().search_emp(new_name)
             if emp_data is not None and not emp_data['Date Departed']:
                 print("This employee already exists. Please try again.")
             else:
                 break
 
-        self.new_level = Menu(self.the_employee_list).take_input("string", "Level")
+        new_level = Take_input("string", "Level").the_user_input
 
-        self.new_month = Menu(self.the_employee_list).take_input("int", "Month (MM)")
-        self.new_month = f'{self.new_month:02}'
+        new_month = Take_input("int", "Month (MM)").the_user_input
+        #fills the number in with zeros
+        new_month = f'{new_month:02}'
 
-        self.new_day = Menu(self.the_employee_list).take_input("int", "Day (DD)")
-        self.new_day = f'{self.new_day:02}'
+        new_day = Take_input("int", "Day (DD)").the_user_input
+        #fills the number in with zeros
+        new_day = f'{new_day:02}'
 
         while True:
-            self.new_year = Menu(self.the_employee_list).take_input("int", "Year (YYYY)")
-            if len(str(self.new_year)) == 4:
+            new_year = Take_input("int", "Year (YYYY)").the_user_input
+            if len(str(new_year)) == 4:
                 break
             else:
                 print("Please input four integers.")
 
-        self.new_pay = Menu(self.the_employee_list).take_input("money", "Pay")
-        self.new_pay = str(self.new_pay)
+        new_pay = Take_input("money", "Pay").the_user_input
+        new_pay = str(new_pay)
 
-        self.new_position = Menu(self.the_employee_list).take_input("string", "Position")
+        new_position = Take_input("string", "Position").the_user_input
 
-        self.new_date = str(str(self.new_year)+"-"+str(self.new_month)+"-"+str(self.new_day))
+        new_date = str(str(new_year)+"-"+str(new_month)+"-"+str(new_day))
 
-        final_input = Menu(self.the_employee_list).take_input("verify", "Are you sure you want to add this new employee?")
+        final_input = Take_input("verify", "Are you sure you want to add this new employee?").the_user_input
 
         if final_input == "y" or final_input == "Y":
-            (self.the_employee_list).append({
-                "Name": self.new_name,
-                "Level": self.new_level,
-                "Date Hired": self.new_date,
-                "Pay": self.new_pay,
-                "Job Position": self.new_position,
+            self.the_employee_list.append({
+                "Name": new_name,
+                "Level": new_level,
+                "Date Hired": new_date,
+                "Pay": new_pay,
+                "Job Position": new_position,
                 "Date Departed": ''
             })
             print("This employee has been added to the system.")
@@ -99,7 +93,7 @@ class Employee(EmployeeList):
         else:
             print("You will now be redirected to the main menu.")
 
-        Menu(self.the_employee_list).display_main_menu()
+        return
 
     def delete_emp(self):
         while True:
@@ -190,7 +184,6 @@ class Employee(EmployeeList):
         )
         print(" ")
         input("Press ENTER")
-        Menu(self.the_employee_list).display_main_menu()
 
     def get_max_lengths(self, the_employee_list):
         for row in the_employee_list:
@@ -260,7 +253,7 @@ class Menu():
     #read, disp file from menu
     def __init__(self):
         self.employee_list = list()
-        self.file_object = File(None)
+        self.file_object = File(self.employee_list)
         self.done = False
 
         self.user_choice = 0
@@ -277,7 +270,8 @@ class Menu():
 
         print("running.")
         #file is read into a list.
-        self.employee_list = self.file_object.file_reader()
+        self.file_object.file_reader()
+        self.employee_list = self.file_object.the_employee_list
 
         while self.done == False:
             self.display_main_menu()
@@ -296,8 +290,10 @@ class Menu():
 
     def redirect_user(self):
         if self.user_choice != 3:
+            print(self.employee_list)
+            employee_options = Employee(self.employee_list)
             if self.user_choice == 1:
-                Employee(self.the_employee_list).add_emp()
+                employee_options.add_emp()
 
             elif self.user_choice == 2:
                 Employee(self.the_employee_list).delete_emp()
@@ -323,7 +319,7 @@ class Menu():
                 File(self.the_employee_list).save_file()
                 
             elif self.user_choice == 6:
-                Employee(self.the_employee_list).display_emp(self.the_employee_list)
+                employee_options.display_emp(self.employee_list)
             
             elif self.user_choice == 7:
                 print("Have a nice day.")
@@ -445,6 +441,7 @@ class Take_input:
             return
 
 #TODO:
+
 '''
 
     **MAIN THING**
