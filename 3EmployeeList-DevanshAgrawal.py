@@ -2,30 +2,19 @@ import csv, sys
 from operator import itemgetter
 
 class EmployeeList():
-    def __init__(self):
-        self.employee_list = []
+    def __init__(self, employee_list):
+        self.employee_list = employee_list
         self.employee_list_cur = []
         self.employee_list_dep = []
 
-        self.create_lists()
-
-    def create_lists(self):
-        with open("employees.csv") as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row['Date Departed'] == "":
-                    self.employee_list_cur.append(row)
-                else:
-                    self.employee_list_dep.append(row)
-
-        return(self.employee_list_cur, self.employee_list_dep)
-
     def sort_emp(self, sort_key, the_employee_list):
-        temp_emp_list = EmployeeList(the_employee_list).employee_list
+        temp_emp_list = the_employee_list
         if len(temp_emp_list) > 0:
             temp_emp_list.sort(key=itemgetter(sort_key))
 
-        Employee(self.the_employee_list).display_emp(temp_emp_list)
+        employee_displayer = Employee(temp_emp_list)
+
+        employee_displayer.display_emp(temp_emp_list)
         input("Press ENTER")
         self.display_main_menu()
 
@@ -34,20 +23,13 @@ class EmployeeList():
             if emp['Name'] == search_name:
                 return emp
 
-class Employee():
-    def __init__(self, the_employee_list):
-        self.the_employee_list = the_employee_list
-        print(self.the_employee_list)
-        #Name, Level, Date, Pay, Position, Departed
-        self.max_lengths = [0, 0, 0, 0, 0, 0]
-        
     def add_emp(self):
         print("Please input the following information about the new employee:")
         
         while True:
             new_name = Take_input("string", "Name").the_user_input
-
-            emp_data = EmployeeList().search_emp(new_name)
+            searcher = EmployeeList(self.employee_list)
+            emp_data = searcher.search_emp(new_name)
             if emp_data is not None and not emp_data['Date Departed']:
                 print("This employee already exists. Please try again.")
             else:
@@ -80,7 +62,7 @@ class Employee():
         final_input = Take_input("verify", "Are you sure you want to add this new employee?").the_user_input
 
         if final_input == "y" or final_input == "Y":
-            self.the_employee_list.append({
+            self.employee_list.append({
                 "Name": new_name,
                 "Level": new_level,
                 "Date Hired": new_date,
@@ -133,9 +115,16 @@ class Employee():
             print("You will now be redirected to the main menu.")
 
         Menu(self.the_employee_list).display_main_menu()
+
+class Employee():
+    def __init__(self, the_employee_list):
+        self.the_employee_list = the_employee_list
+        print(self.the_employee_list)
+        #Name, Level, Date, Pay, Position, Departed
+        self.max_lengths = [0, 0, 0, 0, 0, 0]
         
-    def display_emp(self, the_employee_list):
-        self.get_max_lengths(the_employee_list)
+    def display_emp(self):
+        self.get_max_lengths(self.the_employee_list)
         print(
             "╔" + (self.max_lengths[0] * "═") +
             "╦" + (self.max_lengths[1] * "═") +
@@ -185,8 +174,8 @@ class Employee():
         print(" ")
         input("Press ENTER")
 
-    def get_max_lengths(self, the_employee_list):
-        for row in the_employee_list:
+    def get_max_lengths(self):
+        for row in self.the_employee_list:
             if len(row['Name']) > self.max_lengths[0]:
                 self.max_lengths[0] = len(row['Name'])
             
@@ -279,21 +268,18 @@ class Menu():
             possible_choices = [1, 2, 3, 4, 5, 6, 7]
             input_valid = False
 
-            while input_valid is False:
-                self.user_choice = Take_input("int", "Insert Choice").the_user_input
-                if self.user_choice in possible_choices and type(self.user_choice) == int:
-                    input_valid = True
-                else:
-                    print("Please input an integer from 1-7.")
-
+            self.user_choice = Take_input("int", "Insert Choice").the_user_input
             self.redirect_user()
 
     def redirect_user(self):
         if self.user_choice != 3:
             print(self.employee_list)
             employee_options = Employee(self.employee_list)
+            employee_list_interactions = EmployeeList(self.employee_list)
             if self.user_choice == 1:
-                employee_options.add_emp()
+                employee_list_interactions.add_emp()
+                #updates the employee list with added emp.
+                self.employee_list = employee_list_interactions.employee_list
 
             elif self.user_choice == 2:
                 Employee(self.the_employee_list).delete_emp()
@@ -326,8 +312,12 @@ class Menu():
                 sys.exit()
 
         elif self.user_choice == 3:
+            self.display_sort_menu()
+            self.user_choice = Take_input("int", "Insert Choice").the_user_input
+            employee_sorter = EmployeeList()
+
             if self.user_choice == 1:
-                self.sort_emp("Name", self.the_employee_list)
+                employee_sorter.sort_emp("Name", self.employee_list)
 
             elif self.user_choice == 2:
                 self.sort_emp("Level", self.the_employee_list)
@@ -343,12 +333,6 @@ class Menu():
 
             elif self.user_choice == 6:
                 self.sort_emp("Date Departed", self.the_employee_list)
-
-            elif self.user_choice == 7:
-                self.display_main_menu()
-            else:
-                print("Please input an integer from 1-7.")
-                self.display_sort_menu()
 
     def display_main_menu(self):
         print(
@@ -388,12 +372,13 @@ class Take_input:
         self.take_input()
 
     def take_input(self):
+        input_valid = False
         if self.input_type == "int":
-            while True:
+            while input_valid is False:
                 try:
                     user_input = int(input(self.input_disp_text + ": "))
                     if user_input is not None:
-                        break
+                        input_valid = True
                 except:
                     print("Please try again.")
 
@@ -401,7 +386,7 @@ class Take_input:
             return
         
         elif self.input_type == "string":
-            while True:
+            while input_valid is False:
                 try:
                     user_input = str(input(self.input_disp_text + ": "))
                     if user_input is not None:
@@ -413,7 +398,7 @@ class Take_input:
             return
 
         elif self.input_type == "money":
-            while True:
+            while input_valid is False:
                 try:
                     user_input = int(input(self.input_disp_text + ": $"))
                     if user_input is not None:
@@ -429,7 +414,7 @@ class Take_input:
 
         elif self.input_type == "verify":
             possible_values = ["Y", "N", "y", "n"]
-            while True:
+            while input_valid is False:
                 try:
                     user_input = str(input(self.input_disp_text + " (Y/N): "))
                     if user_input is not None and user_input in possible_values:
@@ -439,6 +424,23 @@ class Take_input:
 
             self.the_user_input = user_input
             return
+
+        elif self.input_type == "menu":
+            possible_values = [1, 2, 3, 4, 5, 6, 7]
+            while input_valid is False:
+                try:
+                    user_input = int(input(self.input_disp_text + ": "))
+                    if user_input is not None and user_input in possible_values:
+                        input_valid = True
+                except:
+                    print("Please input and integer from 1-7.")
+                '''
+                self.user_choice = Take_input("int", "Insert Choice").the_user_input
+                if self.user_choice in possible_values and type(self.user_choice) == int:
+                    input_valid = True
+                else:
+                    print("Please input an integer from 1-7.")
+                '''
 
 #TODO:
 
@@ -450,9 +452,10 @@ class Take_input:
     Make application super class and everything else sub of application
 '''
 
+'''
 employee_lists = EmployeeList()
 the_employees_cur = employee_lists.employee_list_cur
 the_employees_dep = employee_lists.employee_list_dep
-
+'''
 the_menu = Menu()
 the_menu.run()
