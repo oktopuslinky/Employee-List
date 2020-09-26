@@ -14,9 +14,7 @@ class EmployeeList():
 
         employee_displayer = Employee(temp_emp_list)
 
-        employee_displayer.display_emp(temp_emp_list)
-        input("Press ENTER")
-        self.display_main_menu()
+        employee_displayer.display_emp()
 
     def search_emp(self, search_name):
         for emp in self.employee_list:
@@ -52,8 +50,7 @@ class EmployeeList():
             else:
                 print("Please input four integers.")
 
-        new_pay = TakeInput("money", "Pay").the_user_input
-        new_pay = str(new_pay)
+        new_pay = TakeInput("money", "Pay (no commas)").the_user_input
 
         new_position = TakeInput("string", "Position").the_user_input
 
@@ -132,7 +129,6 @@ class EmployeeList():
 class Employee():
     def __init__(self, the_employee_list):
         self.the_employee_list = the_employee_list
-        print(self.the_employee_list)
         #Name, Level, Date, Pay, Position, Departed
         self.max_lengths = [0, 0, 0, 0, 0, 0]
         
@@ -226,15 +222,14 @@ class File():
     def __init__(self, the_employee_list):
         self.file = "employees.csv"
         self.the_employee_list = the_employee_list
-        self.file_reader()
+        #self.file_reader()
 
     def file_reader(self):
         with open(self.file, "r") as csvfile:
             self.the_employee_list = list(csv.DictReader(csvfile))
-            print(self.the_employee_list)
 
     def save_file(self):
-        final_input = TakeInput("verify", "Are you sure you want to save the file?")
+        final_input = TakeInput("verify", "Are you sure you want to save the file?").the_user_input
         if final_input == "Y" or final_input == "y":
             with open(self.file, "w") as csvfile:
                 headers = ["Name", 'Level', 'Date Hired', 'Pay', "Job Position", "Date Departed"]
@@ -249,8 +244,6 @@ class File():
         else:
             print("You will now be redirected to the main menu.")
 
-        Menu(self.the_employee_list).display_main_menu()
-
 class Menu():
     #read, disp file from menu
     def __init__(self):
@@ -261,15 +254,6 @@ class Menu():
         self.user_choice = 0
 
     def run(self):
-        #YOU CAN CREATE OBJECTS IN CLASSES
-
-        #read file
-        #add to list
-        #while not self.done:
-            #disp menu
-            #get input
-            #take action from input
-
         print("running.")
         #file is read into a list.
         self.file_object.file_reader()
@@ -286,7 +270,6 @@ class Menu():
 
     def redirect_user(self):
         if self.user_choice != 3:
-            print(self.employee_list)
             employee_options = Employee(self.employee_list)
             employee_list_interactions = EmployeeList(self.employee_list)
             if self.user_choice == 1:
@@ -305,18 +288,18 @@ class Menu():
                 
             elif self.user_choice == 4:
                 searching_name = TakeInput("string", "What is the name of this employee?").the_user_input
-                employee_data = EmployeeList(self.the_employee_list).search_emp(searching_name)
+                searcher = EmployeeList(self.employee_list)
+                employee_data = searcher.search_emp(searching_name)
                 if employee_data is not None:
                     the_employee_data = [employee_data]
-                    Employee(self.the_employee_list).display_emp(the_employee_data)
+                    one_employee_displayer = Employee(the_employee_data)
+                    one_employee_displayer.display_emp()
                 else:
                     print("This employee does not exist.")
-                
-                input("Press ENTER:")
-                self.display_main_menu()
 
             elif self.user_choice == 5:
-                File(self.the_employee_list).save_file()
+                file_saver = File(self.employee_list)
+                file_saver.save_file()
                 
             elif self.user_choice == 6:
                 employee_options.display_emp()
@@ -328,25 +311,25 @@ class Menu():
         elif self.user_choice == 3:
             self.display_sort_menu()
             self.user_choice = TakeInput("int", "Insert Choice").the_user_input
-            employee_sorter = EmployeeList()
+            employee_sorter = EmployeeList(self.employee_list)
 
             if self.user_choice == 1:
                 employee_sorter.sort_emp("Name", self.employee_list)
 
             elif self.user_choice == 2:
-                self.sort_emp("Level", self.the_employee_list)
+                employee_sorter.sort_emp("Level", self.employee_list)
                 
             elif self.user_choice == 3:
-                self.sort_emp("Job Position", self.the_employee_list)
+                employee_sorter.sort_emp("Job Position", self.employee_list)
                 
             elif self.user_choice == 4:
-                self.sort_emp("Date Hired", self.the_employee_list)
+                employee_sorter.sort_emp("Date Hired", self.employee_list)
                 
             elif self.user_choice == 5:
-                self.sort_emp("Pay", self.the_employee_list)
+                employee_sorter.sort_emp("Pay", self.employee_list)
 
             elif self.user_choice == 6:
-                self.sort_emp("Date Departed", self.the_employee_list)
+                employee_sorter.sort_emp("Date Departed", self.employee_list)
 
     def display_main_menu(self):
         print(
@@ -449,20 +432,5 @@ class TakeInput:
                 except:
                     print("Please input and integer from 1-7.")
 
-#TODO:
-
-'''
-
-    **MAIN THING**
-    REWIRE ALL OF THE REDIRECTS!!!
-
-    Make application super class and everything else sub of application
-'''
-
-'''
-employee_lists = EmployeeList()
-the_employees_cur = employee_lists.employee_list_cur
-the_employees_dep = employee_lists.employee_list_dep
-'''
 the_menu = Menu()
 the_menu.run()
