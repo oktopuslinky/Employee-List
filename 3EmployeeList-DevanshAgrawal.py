@@ -27,7 +27,7 @@ class EmployeeList():
         print("Please input the following information about the new employee:")
         
         while True:
-            new_name = Take_input("string", "Name").the_user_input
+            new_name = TakeInput("string", "Name").the_user_input
             searcher = EmployeeList(self.employee_list)
             emp_data = searcher.search_emp(new_name)
             if emp_data is not None and not emp_data['Date Departed']:
@@ -35,31 +35,31 @@ class EmployeeList():
             else:
                 break
 
-        new_level = Take_input("string", "Level").the_user_input
+        new_level = TakeInput("string", "Level").the_user_input
 
-        new_month = Take_input("int", "Month (MM)").the_user_input
+        new_month = TakeInput("int", "Month (MM)").the_user_input
         #fills the number in with zeros
         new_month = f'{new_month:02}'
 
-        new_day = Take_input("int", "Day (DD)").the_user_input
+        new_day = TakeInput("int", "Day (DD)").the_user_input
         #fills the number in with zeros
         new_day = f'{new_day:02}'
 
         while True:
-            new_year = Take_input("int", "Year (YYYY)").the_user_input
+            new_year = TakeInput("int", "Year (YYYY)").the_user_input
             if len(str(new_year)) == 4:
                 break
             else:
                 print("Please input four integers.")
 
-        new_pay = Take_input("money", "Pay").the_user_input
+        new_pay = TakeInput("money", "Pay").the_user_input
         new_pay = str(new_pay)
 
-        new_position = Take_input("string", "Position").the_user_input
+        new_position = TakeInput("string", "Position").the_user_input
 
         new_date = str(str(new_year)+"-"+str(new_month)+"-"+str(new_day))
 
-        final_input = Take_input("verify", "Are you sure you want to add this new employee?").the_user_input
+        final_input = TakeInput("verify", "Are you sure you want to add this new employee?").the_user_input
 
         if final_input == "y" or final_input == "Y":
             self.employee_list.append({
@@ -79,42 +79,55 @@ class EmployeeList():
 
     def delete_emp(self):
         while True:
-            the_user_input = Menu(self.the_employee_list).take_input("string", "What is the name of this employee")
-            emp_data = EmployeeList(self.the_employee_list).search_emp(the_user_input)
+            the_user_input = TakeInput("string", "What is the name of this employee?").the_user_input
+            searcher = EmployeeList(self.employee_list)
+            emp_data = searcher.search_emp(the_user_input)
+
             employee_index = None
-            for index in range(len(self.the_employee_list)):
-                if self.the_employee_list[index] == emp_data:
+            for index in range(len(self.employee_list)):
+                if self.employee_list[index] == emp_data:
                     print("Found a Match!")
-                    employee_index = index
+                    if self.employee_list[index]['Date Departed']:
+                        print("This employee is already retired.")
+                        employee_redirect = TakeInput("verify",
+                            '''
+                            Input "Y" if you want to go back to the main menu
+                            Input "N" if you want to try deleting another employee.
+                            '''
+                        ).the_user_input
+                        if employee_redirect == "Y" or employee_redirect == "y":
+                            return
+                    else:
+                        employee_index = index
 
             if employee_index:
                 break
+            else:
+                print("This employee does not exist in the system. Please try again.")
 
         while True:
-            departed_year = Menu(self.the_employee_list).take_input("int", "What year did the employee depart? (YYYY)")
+            departed_year = TakeInput("int", "What year did the employee depart? (YYYY)").the_user_input
             if len(str(departed_year)) == 4:
                 break
             else:
                 print("Please input four integers.")
 
-        departed_month = Menu(self.the_employee_list).take_input("int", "what month did the employee depart?")
+        departed_month = TakeInput("int", "what month did the employee depart?").the_user_input
         departed_month = f'{departed_month:02}'
 
-        departed_day = Menu(self.the_employee_list).take_input("int", "what day of the month did the employee depart?")
+        departed_day = TakeInput("int", "what day of the month did the employee depart?").the_user_input
         departed_day = f'{departed_day:02}'
 
         final_date = str(str(departed_year)+"-"+str(departed_month)+"-"+str(departed_day))
 
-        final_choice = Menu(self.the_employee_list).take_input("verify", "Are you sure you want to delete this employee?")
+        final_choice = TakeInput("verify", "Are you sure you want to delete this employee?").the_user_input
 
         if final_choice == "Y" or final_choice == "y":
-            self.the_employee_list[employee_index]['Date Departed'] = final_date
+            self.employee_list[employee_index]['Date Departed'] = final_date
             print("Employee deleted.")
             input("Press ENTER")
         else:
             print("You will now be redirected to the main menu.")
-
-        Menu(self.the_employee_list).display_main_menu()
 
 class Employee():
     def __init__(self, the_employee_list):
@@ -124,7 +137,7 @@ class Employee():
         self.max_lengths = [0, 0, 0, 0, 0, 0]
         
     def display_emp(self):
-        self.get_max_lengths(self.the_employee_list)
+        self.get_max_lengths()
         print(
             "╔" + (self.max_lengths[0] * "═") +
             "╦" + (self.max_lengths[1] * "═") +
@@ -152,7 +165,7 @@ class Employee():
             "╬" + (13 * "═") +
             "╣"
         )
-        for emp in the_employee_list:
+        for emp in self.the_employee_list:
             print(
                 "║" + emp['Name'] + ' ' * (self.max_lengths[0] - len(emp['Name'])) +
                 "║" + emp["Level"] + ' ' * (self.max_lengths[1] - len(emp['Level'])) +
@@ -221,7 +234,7 @@ class File():
             print(self.the_employee_list)
 
     def save_file(self):
-        final_input = Menu(self.the_employee_list).take_input("verify", "Are you sure you want to save the file?")
+        final_input = TakeInput("verify", "Are you sure you want to save the file?")
         if final_input == "Y" or final_input == "y":
             with open(self.file, "w") as csvfile:
                 headers = ["Name", 'Level', 'Date Hired', 'Pay', "Job Position", "Date Departed"]
@@ -268,7 +281,7 @@ class Menu():
             possible_choices = [1, 2, 3, 4, 5, 6, 7]
             input_valid = False
 
-            self.user_choice = Take_input("int", "Insert Choice").the_user_input
+            self.user_choice = TakeInput("int", "Insert Choice").the_user_input
             self.redirect_user()
 
     def redirect_user(self):
@@ -282,15 +295,16 @@ class Menu():
                 self.employee_list = employee_list_interactions.employee_list
 
             elif self.user_choice == 2:
-                Employee(self.the_employee_list).delete_emp()
+                employee_list_interactions.delete_emp()
+                self.employee_list = employee_list_interactions.employee_list
 
             elif self.user_choice == 3:
                 self.display_sort_menu()
-                the_user_input = self.take_input("int", "Insert choice")
+                the_user_input = TakeInput("int", "Insert choice").the_user_input
                 self.redirect_user_sort(the_user_input)
                 
             elif self.user_choice == 4:
-                searching_name = self.take_input("string", "What is the name of this employee?")
+                searching_name = TakeInput("string", "What is the name of this employee?").the_user_input
                 employee_data = EmployeeList(self.the_employee_list).search_emp(searching_name)
                 if employee_data is not None:
                     the_employee_data = [employee_data]
@@ -305,7 +319,7 @@ class Menu():
                 File(self.the_employee_list).save_file()
                 
             elif self.user_choice == 6:
-                employee_options.display_emp(self.employee_list)
+                employee_options.display_emp()
             
             elif self.user_choice == 7:
                 print("Have a nice day.")
@@ -313,7 +327,7 @@ class Menu():
 
         elif self.user_choice == 3:
             self.display_sort_menu()
-            self.user_choice = Take_input("int", "Insert Choice").the_user_input
+            self.user_choice = TakeInput("int", "Insert Choice").the_user_input
             employee_sorter = EmployeeList()
 
             if self.user_choice == 1:
@@ -364,7 +378,7 @@ class Menu():
             """
         )
 
-class Take_input:
+class TakeInput:
     def __init__(self, input_type, input_disp_text):
         self.input_type = input_type
         self.input_disp_text = input_disp_text
@@ -434,13 +448,6 @@ class Take_input:
                         input_valid = True
                 except:
                     print("Please input and integer from 1-7.")
-                '''
-                self.user_choice = Take_input("int", "Insert Choice").the_user_input
-                if self.user_choice in possible_values and type(self.user_choice) == int:
-                    input_valid = True
-                else:
-                    print("Please input an integer from 1-7.")
-                '''
 
 #TODO:
 
